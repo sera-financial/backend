@@ -2,8 +2,16 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+import { dbConnect } from './app/lib/db.js';
+import dotenv from 'dotenv';
+
 
 const router = express.Router();
+
+// Ensure database connection
+dbConnect().catch(err => {
+  console.error('Failed to connect to the database:', err);
+});
 
 // User Schema
 const userSchema = new mongoose.Schema({
