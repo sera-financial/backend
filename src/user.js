@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { dbConnect } from './app/lib/db.js';
 import dotenv from 'dotenv';
+import User from './models/User.js';
 
 const router = express.Router();
 router.use(cors(
@@ -19,13 +20,7 @@ dbConnect().catch(err => {
   console.error('Failed to connect to the database:', err);
 });
 
-// User Schema
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
-});
 
-const User = mongoose.model('User', userSchema);
 
 // Middleware to authenticate token
 const authenticateToken = (req, res, next) => {
@@ -44,36 +39,40 @@ const authenticateToken = (req, res, next) => {
 // Register User
 router.post('/register', async (req, res) => {
 
-  const { username, password } = req.body;
+  const { email, password, fullname } = req.body;
 
   // Check if user already exists
-  const existingUser = await User.findOne({ username });
+  const existingUser = await User.findOne({ email });
   if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
   // Hash the password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-
+    let firstName = fullname.split(' ')[0];
+    let lastName = fullname.split(' ')[1];
   // Create new user
   const newUser = new User({
-    username,
-    password: hashedPassword
+    email,
+    password: hashedPassword,
+    firstName,
+    lastName
   });
 
   try {
     const savedUser = await newUser.save();
     res.status(201).json({ message: 'User registered successfully', userId: savedUser._id });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: 'Error registering user', error: err.message });
   }
 });
 
 // Login User
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   // Check if user exists
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ email });
   if (!user) return res.status(400).json({ message: 'User does not exist' });
 
   // Validate password
@@ -88,10 +87,22 @@ router.post('/login', async (req, res) => {
 // Example of a protected route
 router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'Access to protected route', user: req.user });
+
 });
 
-router.get('/test', (req, res) => {
-    res.send('Hello World');
+// Fetch account details
+router.get('/account', authenticateToken, async (req, res) => {
+  // get user id from token
+  const userId = req.user._id;
+  console.log(userId);
+  try {
+    const account = await User.findById(userId).select('-password'); // Exclude password field
+
+    if (!account) return res.status(404).json({ message: 'Account not found' });
+    res.status(200).json({ user: account });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching account details', error: err.message });
+  }
 });
 
 // Enable CORS for all routes

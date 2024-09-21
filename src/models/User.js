@@ -1,11 +1,6 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  username: { 
-    type: String, 
-    required: true, 
-    unique: true 
-  },
   email: { 
     type: String, 
     required: true, 
@@ -22,7 +17,7 @@ const userSchema = new mongoose.Schema({
   accountId: {
     type: String,
     required: false,
-    unique: true,
+    unique: false,
   },
   transactionList: {
     type: Array,
