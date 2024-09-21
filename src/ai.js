@@ -98,7 +98,7 @@ router.post('/ocr-extraction', async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "sk-tune-55WZEcq50hGTI7L4NXP86FBeTNpnhBve3Nn",
+        "Authorization": process.env.TUNE_KEY,
       },
       body: JSON.stringify({
         temperature: 0.5, 
