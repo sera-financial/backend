@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 const router = express.Router();
 router.use(cors(
     {
-        origin: 'http://localhost:3000',
+        origin: '*',
         credentials: true,
     }
 ));

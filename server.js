@@ -11,7 +11,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: '*',
     credentials: true,
 }));
 
