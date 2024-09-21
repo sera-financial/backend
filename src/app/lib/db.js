@@ -13,6 +13,7 @@ export async function dbConnect() {
   }
 
   const conString = process.env.MONGO_URL;
+  console.log("Connecting to MongoDB:", conString);
   const promise = mongoose.connect(conString, {
     autoIndex: true,
   });
