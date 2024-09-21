@@ -25,7 +25,7 @@ router.post('/chat', async (req, res) => {
         "Authorization": process.env.TUNE_KEY,
       },
       body: JSON.stringify({
-        temperature: 0.9, 
+        temperature: 0.5, 
         messages: [
           {
             "role": "user",
@@ -98,19 +98,29 @@ router.post('/ocr-extraction', async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": process.env.TUNE_KEY,
+        "Authorization": "sk-tune-55WZEcq50hGTI7L4NXP86FBeTNpnhBve3Nn",
       },
       body: JSON.stringify({
-        temperature: 0.8, 
+        temperature: 0.5, 
         messages:  [
+          {
+            "role": "system",
+            "content": `You are an extractive AI system who's only purpose is to extract transaction information from OCR scraped text from a receipt. Do not hallucinate any information if you are unsure. You must return a json output if the format:
+{
+  "vendor": The name of the vendor being paid to
+  "amount": The dollar amount of the transaction
+  "datetime": String format of the date and time of the transaction.
+}
+If the input is not extractable, return {} and terminate.`
+          },
           {
             "role": "user",
             "content": req.body.message || ""
           }
         ],
-        model: "taimurshaikh/sera-ocr-extraction",
+        model: "taimurshaikh/sera-cerebras-ocr",
         stream: false,
-        "frequency_penalty":  0,
+        "frequency_penalty":  0.2,
         "max_tokens": 900
       })
     });
