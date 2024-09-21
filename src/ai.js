@@ -1,12 +1,19 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 dotenv.config();
 
 const router = express.Router();
+router.use(cors(
+    {
+        origin: '*',
+        credentials: true,
+    }
+));
 
 /**
  * POST /api/ai/chat
- * Handles chat requests using the Tune API.
+ * Handles streaming chat requests using the Tune API.
  */
 router.post('/chat', async (req, res) => {
   try {
@@ -25,18 +32,39 @@ router.post('/chat', async (req, res) => {
           }
         ],
         model: "taimurshaikh/sera-chat",
-        stream: false,
+        stream: true,
         "frequency_penalty": 0.2,
         "max_tokens": 100
       })
     });
 
-    const data = await response.json();
-    console.log(data);
-    res.json(data);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        res.write('data: [DONE]\n\n');
+        break;
+      }
+      const chunk = decoder.decode(value);
+      res.write(`data: ${chunk}\n\n`);
+    }
+
+    res.end();
   } catch (error) {
     console.error('Error in chat route:', error);
-    res.status(500).json({ error: 'An error occurred while processing your request' + error });
+    res.status(500).json({ error: 'An error occurred while processing your request: ' + error.message });
   }
 });
 

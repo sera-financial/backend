@@ -12,9 +12,9 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/ai', aiRoutes);
-    app.use(cors({
-    origin: '*',
-    credentials: true,
+  app.use(cors({
+  origin: '*',
+  credentials: true,
 }));
 
 const PORT = process.env.PORT || 3001;
