@@ -1,12 +1,18 @@
 import express from 'express';
+import cors from 'cors'; // Import cors
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import { dbConnect } from './app/lib/db.js';
 import dotenv from 'dotenv';
 
-
 const router = express.Router();
+router.use(cors(
+    {
+        origin: 'http://localhost:3000',
+        credentials: true,
+    }
+));
 
 // Ensure database connection
 dbConnect().catch(err => {
@@ -37,6 +43,7 @@ const authenticateToken = (req, res, next) => {
 
 // Register User
 router.post('/register', async (req, res) => {
+
   const { username, password } = req.body;
 
   // Check if user already exists
@@ -86,6 +93,8 @@ router.get('/protected', authenticateToken, (req, res) => {
 router.get('/test', (req, res) => {
     res.send('Hello World');
 });
+
+// Enable CORS for all routes
 
 
 export default router;
