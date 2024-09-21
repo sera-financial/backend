@@ -1,3 +1,4 @@
+import axios from 'axios';
 import express from 'express';
 import cors from 'cors'; // Import cors
 import bcrypt from 'bcryptjs';
@@ -123,5 +124,70 @@ router.put('/account/updateId', authenticateToken, async (req, res) => {
     }
 });
 
+// Generate random transactions
+
+router.post('/generate-transactions', authenticateToken, async (req, res) => {
+  const userId = req.user._id;
+
+  // External API URL and API key
+  const apiUrl = 'https://api.nessieisreal.com/merchants';
+  const apiKey = '575fbd2b0728ae7c870640023404c388'; 
+  // Simulating categories for merchants
+  const categories = ['Food', 'Electronics', 'Groceries', 'Coffee', 'Retail', 'Entertainment', 'Travel', 'Health', 'Services', 'Clothing'];
+
+  // Simulating 50 unique merchants in case API is unavailable or if you want to create them manually
+  const simulatedMerchants = Array.from({ length: 50 }, (_, i) => ({
+    name: `Merchant_${i + 1}`,
+    merchantId: `M_${i + 1000}`,
+    category: categories[Math.floor(Math.random() * categories.length)]
+  }));
+
+  try {
+    // Attempt to fetch merchants from an external API (replace with real URL)
+    const response = await axios.get(`${apiUrl}?key=${apiKey}`);
+
+    // If successful, use API merchants, otherwise fall back to simulated data
+    const merchants = response.data.length > 0 ? response.data : simulatedMerchants;
+
+    // Generate random transactions
+    const transactions = Array.from({ length: 50 }, () => {
+      const randomMerchant = merchants[Math.floor(Math.random() * merchants.length)];
+
+      return {
+        userId,
+        vendor: randomMerchant.name,
+        merchantId: randomMerchant.merchantId || randomMerchant._id,  // Use merchantId or API ID
+        category: randomMerchant.category || categories[Math.floor(Math.random() * categories.length)],  // Fallback category if API doesn't provide
+        amount: (Math.random() * 100).toFixed(2),
+        date: new Date(),
+      };
+    });
+
+    // Optionally, save transactions to your database here
+
+    res.status(201).json({ message: 'Transactions generated successfully', transactions });
+  } catch (err) {
+    console.error(err);
+    // Fallback to the simulated merchants if external API call fails
+    const fallbackTransactions = Array.from({ length: 50 }, () => {
+      const randomMerchant = simulatedMerchants[Math.floor(Math.random() * simulatedMerchants.length)];
+
+      return {
+        userId,
+        vendor: randomMerchant.name,
+        merchantId: randomMerchant.merchantId,
+        category: randomMerchant.category,
+        amount: (Math.random() * 100).toFixed(2),
+        date: new Date(),
+      };
+    });
+
+    res.status(500).json({
+      message: 'Error generating transactions with external API. Falling back to simulated data.',
+      transactions: fallbackTransactions,
+      error: err.message
+    });
+  }
+});
 
 export default router;
