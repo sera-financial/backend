@@ -21,12 +21,12 @@ const userSchema = new mongoose.Schema({
   },
   accountId: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
   },
   transactionList: {
     type: Array,
-    required: true,
+    required: false,
     default: [],
   },
   password: { 
