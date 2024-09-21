@@ -1,5 +1,6 @@
 import express from 'express';
 import userRoutes from './src/user.js';
+import aiRoutes from './src/ai.js';
 import { dbConnect } from './src/app/lib/db.js';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -8,10 +9,12 @@ const app = express();
 
 app.use(express.json());
 app.use('/api/users', userRoutes);
+app.use('/api/ai', aiRoutes);
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true,
 }));
+
 const PORT = process.env.PORT || 3001;
 
 dbConnect().then(() => {
