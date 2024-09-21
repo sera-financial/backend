@@ -1,29 +1,41 @@
 import mongoose from 'mongoose';
 
 const transactionSchema = new mongoose.Schema({
-  userId: {
+  transactionId: {
     type: String,
     required: true,
   },
-  transactionType: {
-    type: String,
-    required: true,
-  },
-  transactionAmount: {
-    type: Number,
-    required: true,
-  },
-  transactionDate: {
-    type: Date,
-    required: true,
-  },
-  transactionDescription: {
+  type: {
     type: String,
     required: false,
   },
-  transactionMerchant: {
+  merchantId: {
     type: String,
+    required: false,
+  },
+  payerId: {
+    type: String,
+    required: false,
+  },
+  purchaseDate: {
+    type: Date,
+    required: false,
+  },
+  amount: {
+    type: Number,
     required: true,
+  },
+  status: {
+    type: String,
+    required: false,
+  },
+  medium: {
+    type: String,
+    required: false,
+  },
+  description: {
+    type: String,
+    required: false,
   },
 }, { 
   timestamps: true 
