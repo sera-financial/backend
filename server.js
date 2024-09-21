@@ -17,3 +17,7 @@ dbConnect().then(() => {
 }).catch((error) => {
   console.error('Failed to connect to the database:', error);
 });
+
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});

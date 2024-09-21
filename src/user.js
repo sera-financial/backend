@@ -83,4 +83,9 @@ router.get('/protected', authenticateToken, (req, res) => {
   res.json({ message: 'Access to protected route', user: req.user });
 });
 
+router.get('/test', (req, res) => {
+    res.send('Hello World');
+});
+
+
 export default router;
