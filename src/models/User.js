@@ -1,5 +1,11 @@
 import mongoose from 'mongoose';
 
+const budgetSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  limit: { type: Number, required: true },
+  spent: { type: Number, default: 0 }
+});
+
 const userSchema = new mongoose.Schema({
   email: { 
     type: String, 
@@ -15,20 +21,21 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   accountId: {
-    type: String,
+    type: Array,
     required: false,
     unique: false,
+    default: [],
   },
   transactionList: {
     type: Array,
     required: false,
     default: [],
   },
+  budgets: [budgetSchema],
   password: { 
     type: String, 
     required: true 
   },
-
 }, { 
   timestamps: true 
 });

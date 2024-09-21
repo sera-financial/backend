@@ -1,5 +1,6 @@
 import express from 'express';
 import userRoutes from './src/user.js';
+import budgetRoutes from './src/budget.js';
 import aiRoutes from './src/ai.js';
 import { dbConnect } from './src/app/lib/db.js';
 import dotenv from 'dotenv';
@@ -9,8 +10,9 @@ const app = express();
 
 app.use(express.json());
 app.use('/api/users', userRoutes);
+app.use('/api/budgets', budgetRoutes);
 app.use('/api/ai', aiRoutes);
-app.use(cors({
+    app.use(cors({
     origin: '*',
     credentials: true,
 }));

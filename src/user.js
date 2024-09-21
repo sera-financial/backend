@@ -105,7 +105,23 @@ router.get('/account', authenticateToken, async (req, res) => {
   }
 });
 
-// Enable CORS for all routes
+router.put('/account/updateId', authenticateToken, async (req, res) => {
+    const { accountId } = req.body;
+    const userId = req.user._id;
+    console.log(accountId);
+    console.log(userId);
+
+    try {
+        const user = await User.findById(userId);
+        // add accountId to the user's accountId array
+        user.accountId.push(accountId);
+        await user.save();
+    
+        res.status(200).json({ message: 'Account ID updated successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating account ID', error: err.message });
+    }
+});
 
 
 export default router;
