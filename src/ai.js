@@ -4,6 +4,10 @@ dotenv.config();
 
 const router = express.Router();
 
+/**
+ * POST /api/ai/chat
+ * Handles chat requests using the Tune API.
+ */
 router.post('/chat', async (req, res) => {
   try {
     const response = await fetch("https://proxy.tune.app/chat/completions", {
@@ -36,13 +40,17 @@ router.post('/chat', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/ai/ocr-extraction
+ * Handles OCR extraction requests using the Tune API.
+ */
 router.post('/ocr-extraction', async (req, res) => {
   try {
     const response = await fetch("https://proxy.tune.app/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "sk-tune-55WZEcq50hGTI7L4NXP86FBeTNpnhBve3Nn",
+        "Authorization": process.env.TUNE_KEY,
       },
       body: JSON.stringify({
         temperature: 0.8, 
@@ -68,6 +76,10 @@ router.post('/ocr-extraction', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/ai/test
+ * Test route to verify the TUNE_KEY environment variable.
+ */
 router.get('/test', (req, res) => {
   res.send(process.env.TUNE_KEY);
 });
