@@ -16,6 +16,7 @@ router.use(cors(
  * Handles streaming chat requests using the Tune API.
  */
 router.post('/chat', async (req, res) => {
+  let headersSent = false;
   try {
     const response = await fetch("https://proxy.tune.app/chat/completions", {
       method: "POST",
@@ -42,29 +43,48 @@ router.post('/chat', async (req, res) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    });
+    if (!headersSent) {
+      res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Transfer-Encoding': 'chunked'
+      });
+      headersSent = true;
+    }
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) {
-        res.write('data: [DONE]\n\n');
-        break;
-      }
+      if (done) break;
+      
       const chunk = decoder.decode(value);
-      res.write(`data: ${chunk}\n\n`);
+      const lines = chunk.split('\n');
+      console.log(lines);
+      for (const line of lines) {
+        if (line.startsWith('data:')) {
+          try {
+            const jsonData = JSON.parse(line.slice(5));
+            if (jsonData.choices && jsonData.choices[0].delta && jsonData.choices[0].delta.content) {
+              res.write(jsonData.choices[0].delta.content);
+            }
+          } catch (parseError) {
+            console.error('Error parsing JSON:', parseError);
+            // Skip this line and continue with the next one
+            continue;
+          }
+        }
+      }
     }
 
-    res.end();
+    if (!res.writableEnded) {
+      res.end();
+    }
   } catch (error) {
     console.error('Error in chat route:', error);
-    res.status(500).json({ error: 'An error occurred while processing your request: ' + error.message });
+    if (!headersSent) {
+      res.status(500).json({ error: 'An error occurred while processing your request: ' + error.message });
+    }
   }
 });
 
