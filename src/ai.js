@@ -43,7 +43,10 @@ router.post('/chat', async (req, res) => {
     }
     // return the message
     const data = await response.json();
-    res.json(data.choices[0].message.content);
+    const responseMessage = data.choices[0].message.content;
+    // JSON.parse the response message
+    const responseObject = JSON.parse(responseMessage);
+    res.json(responseObject);
   } catch (error) {
     console.error('Error in chat route:', error);
     if (!headersSent) {
@@ -67,16 +70,6 @@ router.post('/ocr-extraction', async (req, res) => {
       body: JSON.stringify({
         temperature: 0.1, 
         messages:  [
-          {
-            "role": "system",
-            "content": `You are an extractive AI system who's only purpose is to extract transaction information from OCR scraped text from a receipt. Do not hallucinate any information if you are unsure. You must return a json output if the format:
-{
-  "vendor": The name of the vendor being paid to
-  "amount": The dollar amount of the transaction
-  "datetime": String format of the date and time of the transaction.
-}
-If the input is not extractable, return {} and terminate.`
-          },
           {
             "role": "user",
             "content": req.body.message || ""
