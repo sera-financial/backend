@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import multer from 'multer';
 import path from 'path';
+import transactionRoutes from './src/transaction.js';
 import qrHandoffRoutes from './src/qrHandoff.js';
 import fs from 'fs';
 //import { runOCR } from './roboflow.js';
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/transactions', transactionRoutes);
 app.use('/api/qr-handoff', qrHandoffRoutes);
 app.use(cors({
   origin: ['http://localhost:3000', 'http://10.251.129.22:3000', 'http://10.251.129.22:3001'],

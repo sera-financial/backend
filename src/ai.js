@@ -43,10 +43,7 @@ router.post('/chat', async (req, res) => {
     }
     // return the message
     const data = await response.json();
-    const responseMessage = data.choices[0].message.content;
-    // JSON.parse the response message
-    const responseObject = JSON.parse(responseMessage);
-    res.json(responseObject);
+    res.json(data.choices[0].message.content);
   } catch (error) {
     console.error('Error in chat route:', error);
     if (!headersSent) {
@@ -72,6 +69,16 @@ router.post('/ocr-extraction', async (req, res) => {
         temperature: 0.1, 
         messages:  [
           {
+            "role": "system",
+            "content": `You are an extractive AI system who's only purpose is to extract transaction information from OCR scraped text from a receipt. Do not hallucinate any information if you are unsure. You must return a json output if the format:
+{
+  "vendor": The name of the vendor being paid to
+  "amount": The dollar amount of the transaction
+  "datetime": String format of the date and time of the transaction.
+}
+If the input is not extractable, return {} and terminate.`
+          },
+          {
             "role": "user",
             "content": req.body.ocrResponse.result || ""
           }
@@ -83,6 +90,7 @@ router.post('/ocr-extraction', async (req, res) => {
       })
     });
 
+
     const data = await response.json();
     console.log(data);
     res.json(data);
@@ -93,24 +101,29 @@ router.post('/ocr-extraction', async (req, res) => {
 });
 
 router.post('/merchant-classification', async (req, res) => {
+  console.log(req.body);
   try {
     const response = await fetch("https://proxy.tune.app/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": process.env.TUNE_KEY,
-      },
+      }, 
       body: JSON.stringify({
         temperature: 0.1, 
         messages:  [
           {
+            "role": "system",
+            "content": `Return just the JSON and nothing else. Classify the vendors under categories. The categories are: Food, Gas, Groceries, Restaurants, Shopping, Transportation, Utilities, Other. If the vendor is not in the list, you will return ["Other"].`
+          },
+          {
             "role": "user",
-            "content": req.body.message || ""
+            "content": req.body.messages.join(",")
           }
         ],
         model: "taimurshaikh/sera-merchant-classification",
         stream: false,
-        "frequency_penalty": 0.2,
+     //   "frequency_penalty": 0.2,
         "max_tokens": 100
       })
     });
