@@ -9,7 +9,7 @@ import multer from 'multer';
 import path from 'path';
 import qrHandoffRoutes from './src/qrHandoff.js';
 import fs from 'fs';
-import { runOCR } from './roboflow.js';
+//import { runOCR } from './roboflow.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 

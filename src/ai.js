@@ -60,6 +60,7 @@ router.post('/chat', async (req, res) => {
  * Handles OCR extraction requests using the Tune API.
  */
 router.post('/ocr-extraction', async (req, res) => {
+  console.log(req.body);
   try {
     const response = await fetch("https://proxy.tune.app/chat/completions", {
       method: "POST",
@@ -72,12 +73,12 @@ router.post('/ocr-extraction', async (req, res) => {
         messages:  [
           {
             "role": "user",
-            "content": req.body.message || ""
+            "content": req.body.ocrResponse.result || ""
           }
         ],
         model: "taimurshaikh/sera-cerebras-ocr",
         stream: false,
-        "frequency_penalty":  0.2,
+        //"frequency_penalty":  0.2,
         "max_tokens": 900
       })
     });
