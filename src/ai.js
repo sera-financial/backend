@@ -16,7 +16,6 @@ router.use(cors(
  * Handles streaming chat requests using the Tune API.
  */
 router.post('/chat', async (req, res) => {
-  let headersSent = false;
   try {
     const response = await fetch("https://proxy.tune.app/chat/completions", {
       method: "POST",
@@ -25,7 +24,7 @@ router.post('/chat', async (req, res) => {
         "Authorization": process.env.TUNE_KEY,
       },
       body: JSON.stringify({
-        temperature: 0.5, 
+        temperature: 0.3, 
         messages: [
           {
             "role": "user",
@@ -33,7 +32,7 @@ router.post('/chat', async (req, res) => {
           }
         ],
         model: "taimurshaikh/sera-chat",
-        stream: true,
+        stream: false,
         "frequency_penalty": 0.2,
         "max_tokens": 100
       })
@@ -42,44 +41,9 @@ router.post('/chat', async (req, res) => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
-    if (!headersSent) {
-      res.writeHead(200, {
-        'Content-Type': 'text/plain',
-        'Transfer-Encoding': 'chunked'
-      });
-      headersSent = true;
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-      console.log(lines);
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          try {
-            const jsonData = JSON.parse(line.slice(5));
-            if (jsonData.choices && jsonData.choices[0].delta && jsonData.choices[0].delta.content) {
-              res.write(jsonData.choices[0].delta.content);
-            }
-          } catch (parseError) {
-            console.error('Error parsing JSON:', parseError);
-            // Skip this line and continue with the next one
-            continue;
-          }
-        }
-      }
-    }
-
-    if (!res.writableEnded) {
-      res.end();
-    }
+    // return the message
+    const data = await response.json();
+    res.json(data.choices[0].message.content);
   } catch (error) {
     console.error('Error in chat route:', error);
     if (!headersSent) {
@@ -101,7 +65,7 @@ router.post('/ocr-extraction', async (req, res) => {
         "Authorization": process.env.TUNE_KEY,
       },
       body: JSON.stringify({
-        temperature: 0.5, 
+        temperature: 0.1, 
         messages:  [
           {
             "role": "system",
@@ -130,6 +94,37 @@ If the input is not extractable, return {} and terminate.`
     res.json(data);
   } catch (error) {
     console.error('Error in ocr extraction route:', error);
+    res.status(500).json({ error: 'An error occurred while processing your request' });
+  }
+});
+
+router.post('/merchant-classification', async (req, res) => {
+  try {
+    const response = await fetch("https://proxy.tune.app/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": process.env.TUNE_KEY,
+      },
+      body: JSON.stringify({
+        temperature: 0.1, 
+        messages:  [
+          {
+            "role": "user",
+            "content": req.body.message || ""
+          }
+        ],
+        model: "taimurshaikh/sera-merchant-classification",
+        stream: false,
+        "frequency_penalty": 0.2,
+        "max_tokens": 100
+      })
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error in merchant classification route:', error);
     res.status(500).json({ error: 'An error occurred while processing your request' });
   }
 });
