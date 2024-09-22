@@ -27,7 +27,7 @@ router.use(cors(
 
 // Create a new budget
 router.post('/create', authenticateToken, async (req, res) => {
-  const { userId, name, limit } = req.body;
+  const { userId, name, limit, color } = req.body;
   try {
     const user = await User.findById(userId);
     if (!user) {
