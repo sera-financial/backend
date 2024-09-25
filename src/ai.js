@@ -43,7 +43,7 @@ router.post('/chat', async (req, res) => {
     }
     // return the message
     const data = await response.json();
-    res.json(data.choices[0].message.content);
+    res.json(JSON.parse(data.choices[0].message.content));
   } catch (error) {
     console.error('Error in chat route:', error);
     if (!headersSent) {
